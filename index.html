@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Angularjs Polls</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.min.js"></script>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="">
+	<style>
+		.card {
+			padding: 20px
+		}
+
+	</style>
+</head>
+<body  ng-app="myPolls" ng-controller="myCtrl"  ng-init="defaults()">
+	<div class="jumbotron">
+		<div class="container">
+			<h1>Angularjs Polls</h1>
+			<p>Do not refresh. You can not go back and change your answer. </p>
+		</div>
+	</div>
+	<div class="">
+		<div class="col-md-6 offset-md-3">
+			<div class="card">
+			  <div class="card-body">
+			    <div ng-show="content>0">
+			    	<h4 class="card-title">{{questions[currentQuestion].question}}</h4>
+				    <p class="card-text"></p>
+				    
+					<div ng-repeat="answer in questions[currentQuestion].options">
+						{{$index+1}}. <a href="#" class="card-link" ng-click="selectedOptionForQuestion(currentQuestion,$index)">  {{answer}}</a>
+					</div>
+					<hr>
+					  <div >
+					  	{{currentQuestion+1}}/ {{questions.length}}
+					  	<span class="float-right"><button class="btn btn-primary" ng-click="NextQuestion()" ng-show="showOrNot()">Next</button>	</span>
+					  	<span class="float-right"><button class="btn btn-success" ng-click="submit()" ng-show="showSubmit()">Submit</button>	</span>
+					  	<br><br><br>
+					  </div>
+			    </div>
+			    <div ng-show="afterSubmit>0">
+			    	<h1 ng-show='score'>{{score}}</h1>
+				  	<p ng-show='result'>{{result}}</p>
+				    <button class="btn btn-danger" ng-show="resetButton>0" ng-click="defaults()">Reset</button>
+			    </div>
+			  </div>
+			</div>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"></script>
+	<script>
+		
+
+		var app = angular.module("myPolls", []); 
+		app.controller("myCtrl", function($scope) {
+		    $scope.questions = [
+				{
+					question: "Which is the largest country in the world by population?",
+					options: ["India", "USA", "China", "Russia"],
+					answer: 2
+				},
+				{
+					question: "May the ----- be with you!",
+					options: ["Sandwich", "God", "Force", "Money"],
+					answer: 2
+				},
+				{
+					question: "Paris is capital of -----",
+					options: ["USA", "France", "Italy", "China"],
+					answer: 1
+				},
+				{
+					question: "Which city hosted the 1996 Summer Olympics?",
+					options: ["Atlanta", "Sydney", "Athens", "Beijing"],
+					answer: 0
+				},
+				{	
+					question: "Who invented telephone?",
+					options: ["Albert Einstein", "Alexander Graham Bell", "Isaac Newton", "Marie Curie"],
+					answer: 1
+				}
+			];
+
+			$scope.defaults = function() {
+
+				$scope.currentQuestion = 0;    	//index of question on display
+				$scope.answers = {};           	//declare empty object of answers.
+				
+				$scope.correctAnswers = 0;		//correct answers out of the attempted questions
+				$scope.answeredCount = 0;		//how many answered?
+				$scope.unAnswered = 0;			//how many are unanswered?
+				$scope.content = 1;				//show the content
+				$scope.resetButton = 0;			//hide reset button
+				$scope.afterSubmit = 0;			//hide after submit div
+			}
+
+			$scope.NextQuestion = function() {
+				//increase the question index as you click on the next button
+				$scope.currentQuestion += 1;
+			}
+
+			
+
+			$scope.selectedOptionForQuestion = function(a,b) {
+				//add answers to the object, question index and answer index from array
+				$scope.answers[a] = b;
+				console.log($scope.answers);
+			}
+
+			$scope.showOrNot = function() {
+				//will hide next button on the last question
+				if ($scope.currentQuestion < $scope.questions.length && !($scope.currentQuestion == $scope.questions.length -1)) { return true }
+				else { return false };
+			}
+
+			$scope.showSubmit = function() {
+				//will show submit button on last question
+				if ($scope.currentQuestion == $scope.questions.length -1 ) { return true }
+				else { return false };
+			}
+
+			$scope.reset = function() {
+				$scope.defaults();
+			}
+
+			
+			$scope.submit = function() {
+				//upon submit hide content div
+				$scope.content = 0;	
+				//show reset button
+				$scope.resetButton = 1;
+				//show after submit div
+				$scope.afterSubmit = 1;
+				//get the numbers of questions answered
+				$scope.answeredCount = Object.keys($scope.answers).length;
+				//count unanswered questions
+				$scope.unAnswered = $scope.questions.length-$scope.answeredCount;
+				//if there are any unanswered questions, this will show with the count
+				if ($scope.unAnswered > 0) {
+					$scope.result = $scope.unAnswered + " questions not answered.";
+				}
+
+				
+				//check if attempted questions are answered correctly
+				for (var i=0; i < $scope.answeredCount; i++) {
+					if ($scope.answers[i]==$scope.questions[i].answer) {
+						//for each correct answer increase the count
+						$scope.correctAnswers += 1;
+					}
+					console.log($scope.answers[i]==$scope.questions[i].answer);
+				}
+
+				//show me the score
+				$scope.score = $scope.correctAnswers + "/" + $scope.answeredCount+ " answered correctly.";
+				
+			}
+		});
+	</script>
+</body>
+</html>
